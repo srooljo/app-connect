@@ -238,9 +238,8 @@ function relTime(timestamp) {
 }
 
 function PairingPanel({ pairing, onDone, onRefresh, stale }) {
-  // Guess from this browser; the machine being paired is often the same one.
-  const [windows, setWindows] = useState(() => Boolean(pairing.windows_install_command)
-    && /Windows/i.test(globalThis.navigator?.userAgent || ''))
+  // Mac or Linux is the default, even in a Windows browser; Windows is an explicit choice.
+  const [windows, setWindows] = useState(false)
   const expires = pairing.expires_at ? new Date(pairing.expires_at * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : null
   return <section className="cn-pairing" aria-labelledby="cn-pair-title">
     <div className="cn-card-head">

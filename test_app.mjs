@@ -62,13 +62,16 @@ test('a new machine starts with an editable default name; Enter creates it and s
   } finally { await browser.close() }
 })
 
-test('pairing offers a PowerShell command for a Windows machine', async () => {
+test('pairing defaults to Mac or Linux, even in a Windows browser, and offers PowerShell on request', async () => {
   const { browser, page } = await open(script, machines({ hosts: [], write: request => request.method === 'POST'
-    ? { body: { id: 'h2', name: request.body.name, install_command: 'curl https://fixture.test/i/C | sh', windows_install_command: 'irm https://fixture.test/w/C | iex' } } : undefined }))
+    ? { body: { id: 'h2', name: request.body.name, install_command: 'curl https://fixture.test/i/C | sh', windows_install_command: 'irm https://fixture.test/w/C | iex' } } : undefined }),
+  { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36' })
   try {
     await page.getByRole('button', { name: 'Add machine' }).click()
     await page.getByPlaceholder('My MacBook').press('Enter')
     await page.getByText('curl https://fixture.test/i/C | sh').waitFor()
+    assert.equal(await page.getByRole('button', { name: 'Mac or Linux' }).getAttribute('aria-pressed'), 'true')
+    assert.equal(await page.getByRole('button', { name: 'Windows' }).getAttribute('aria-pressed'), 'false')
     await page.getByRole('button', { name: 'Windows' }).click()
     await page.getByText('irm https://fixture.test/w/C | iex').waitFor()
     await page.getByText('Run this in PowerShell on the machine.', { exact: false }).waitFor()
